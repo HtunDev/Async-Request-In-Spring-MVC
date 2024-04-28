@@ -28,8 +28,25 @@ public class AsyncController {
 
 	@GetMapping("deferred")
 	public DeferredResult<String> deferredResult(@RequestParam(required = false) String error, ModelMap model) {
-		var result = new DeferredResult<String>(1000L, "async-result");
+		var result = new DeferredResult<String>(1000L);
 		model.put("message", "Hello Message From Deferred Result.");
+
+		result.onTimeout(() -> {
+			model.put("message", "Request has been timeout.");
+			result.setErrorResult("error-result");
+		});
+
+		result.onCompletion(() -> {
+			System.out.println("Request has been completed.");
+		});
+
+		result.onError(e -> {
+			e.printStackTrace();
+		});
+		
+		result.setResultHandler(value -> {
+			System.out.println("Result is %s".formatted(value));
+		});
 
 		Executors.newSingleThreadExecutor().execute(() -> {
 			try {
@@ -38,7 +55,7 @@ public class AsyncController {
 					result.setErrorResult("error-result");
 				}
 
-				Thread.sleep(1000);
+				Thread.sleep(500L);
 
 				result.setResult("async-result");
 			} catch (Exception e) {
