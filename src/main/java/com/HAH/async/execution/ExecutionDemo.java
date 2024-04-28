@@ -46,6 +46,7 @@ public class ExecutionDemo {
 			
 			try {
 				System.out.println("Callable Result is %s".formatted(callableFuture.get()));
+				executor.shutdown();
 			} 
 			catch (Exception e) {
 				e.printStackTrace();
